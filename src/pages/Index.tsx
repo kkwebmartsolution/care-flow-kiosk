@@ -1,11 +1,114 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { UserPlus, Users, Heart, Stethoscope } from "lucide-react";
 
 const Index = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="bg-primary text-primary-foreground py-6 shadow-lg">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-primary-foreground/10 rounded-full flex items-center justify-center">
+              <Heart className="w-8 h-8" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold">CareFlow Kiosk</h1>
+              <p className="text-lg opacity-90">Your Health, Our Priority</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto p-8">
+        <div className="text-center mb-12">
+          <h2 className="text-5xl font-bold text-foreground mb-6">Welcome to Our Medical Center</h2>
+          <p className="text-2xl text-muted-foreground mb-8">
+            Book your appointment easily and quickly
+          </p>
+          <div className="flex items-center justify-center gap-4 text-lg text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Stethoscope className="w-5 h-5 text-primary" />
+              Expert Doctors
+            </div>
+            <div className="w-2 h-2 bg-muted-foreground/30 rounded-full"></div>
+            <div className="flex items-center gap-2">
+              <Heart className="w-5 h-5 text-primary" />
+              Quality Care
+            </div>
+            <div className="w-2 h-2 bg-muted-foreground/30 rounded-full"></div>
+            <div>Easy Booking</div>
+          </div>
+        </div>
+
+        {/* Action Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <Card className="border-2 hover:shadow-xl transition-all duration-200 cursor-pointer group" onClick={() => navigate("/login")}>
+            <CardContent className="p-12 text-center space-y-6">
+              <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                <UserPlus className="w-12 h-12 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-3xl font-bold text-foreground mb-3">New Customer</h3>
+                <p className="text-xl text-muted-foreground mb-6">
+                  First time visiting? Register and book your appointment
+                </p>
+                <Button size="kiosk" className="w-full">
+                  Get Started
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-2 hover:shadow-xl transition-all duration-200 cursor-pointer group" onClick={() => navigate("/login")}>
+            <CardContent className="p-12 text-center space-y-6">
+              <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                <Users className="w-12 h-12 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-3xl font-bold text-foreground mb-3">Existing Customer</h3>
+                <p className="text-xl text-muted-foreground mb-6">
+                  Already have an account? Continue with your phone number
+                </p>
+                <Button size="kiosk" className="w-full">
+                  Continue
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Features */}
+        <div className="mt-16 text-center">
+          <h3 className="text-2xl font-bold text-foreground mb-8">Why Choose Us?</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-6">
+              <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="text-3xl">⚡</div>
+              </div>
+              <h4 className="text-xl font-semibold mb-2">Quick Booking</h4>
+              <p className="text-muted-foreground">Book appointments in just a few simple steps</p>
+            </div>
+            <div className="p-6">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="text-3xl">👨‍⚕️</div>
+              </div>
+              <h4 className="text-xl font-semibold mb-2">Expert Doctors</h4>
+              <p className="text-muted-foreground">Qualified specialists ready to help you</p>
+            </div>
+            <div className="p-6">
+              <div className="w-16 h-16 bg-warning/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="text-3xl">🔒</div>
+              </div>
+              <h4 className="text-xl font-semibold mb-2">Secure Payment</h4>
+              <p className="text-muted-foreground">Safe and secure payment processing</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
