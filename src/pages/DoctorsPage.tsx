@@ -70,14 +70,28 @@ const DoctorsPage = () => {
             Back
           </Button>
           
-          <Button 
-            variant="outline" 
-            size="lg"
-            onClick={() => navigate("/search")}
-          >
-            <Search className="mr-2" />
-            Search Doctors
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={() => navigate("/search")}
+            >
+              <Search className="mr-2" />
+              Search Doctors
+            </Button>
+            
+            <Button 
+              variant="destructive" 
+              size="lg"
+              onClick={() => {
+                localStorage.clear();
+                navigate("/");
+              }}
+            >
+              <User className="mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
 
         <div className="text-center mb-10">

@@ -5,12 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Calendar, Clock, User } from "lucide-react";
-
-const timeSlots = [
-  "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM",
-  "11:00 AM", "11:30 AM", "02:00 PM", "02:30 PM",
-  "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM"
-];
+import { doctorTimeSlots } from "@/data/doctorTimeSlots";
 
 const BookingPage = () => {
   const navigate = useNavigate();
@@ -22,6 +17,8 @@ const BookingPage = () => {
 
   const selectedDoctorId = localStorage.getItem("selectedDoctorId");
   const doctorName = "Dr. Sarah Johnson"; // This would normally come from the selected doctor data
+  
+  const availableTimeSlots = selectedDoctorId ? doctorTimeSlots[parseInt(selectedDoctorId) as keyof typeof doctorTimeSlots] || [] : [];
 
   const handleBooking = () => {
     if (selectedDate && selectedTime && patientName && patientAge) {
@@ -86,19 +83,25 @@ const BookingPage = () => {
 
               <div className="space-y-3">
                 <Label className="text-lg font-semibold">Choose Time</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  {timeSlots.map((time) => (
-                    <Button
-                      key={time}
-                      variant={selectedTime === time ? "default" : "outline"}
-                      onClick={() => setSelectedTime(time)}
-                      className="h-12 text-base"
-                    >
-                      <Clock className="mr-2 w-4 h-4" />
-                      {time}
-                    </Button>
-                  ))}
-                </div>
+                {availableTimeSlots.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    {availableTimeSlots.map((time) => (
+                      <Button
+                        key={time}
+                        variant={selectedTime === time ? "default" : "outline"}
+                        onClick={() => setSelectedTime(time)}
+                        className="h-12 text-base"
+                      >
+                        <Clock className="mr-2 w-4 h-4" />
+                        {time}
+                      </Button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-center p-4 border-2 border-dashed rounded-lg">
+                    No available time slots for this doctor
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>

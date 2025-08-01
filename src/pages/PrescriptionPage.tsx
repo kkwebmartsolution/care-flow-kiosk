@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Download, Printer, QrCode, CheckCircle, Calendar, Clock } from "lucide-react";
+import { ArrowLeft, Download, Printer, QrCode, CheckCircle, Calendar, Clock, Video } from "lucide-react";
 
 interface PrescriptionData {
   bookingId: string;
@@ -172,6 +172,15 @@ const PrescriptionPage = () => {
                 >
                   <Printer className="mr-2" />
                   Print Receipt
+                </Button>
+                
+                <Button
+                  onClick={() => navigate("/consultation")}
+                  size="lg"
+                  className="w-full bg-success hover:bg-success/90"
+                >
+                  <Video className="mr-2" />
+                  Consult Now
                 </Button>
               </CardContent>
             </Card>
