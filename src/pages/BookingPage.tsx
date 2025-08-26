@@ -4,13 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Calendar, Clock, User } from "lucide-react";
-import { doctorTimeSlots } from "@/data/doctorTimeSlots";
+import { ArrowLeft, Calendar, User } from "lucide-react";
 
 const BookingPage = () => {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState("");
-  const [selectedTime, setSelectedTime] = useState("");
   const [patientName, setPatientName] = useState("");
   const [patientAge, setPatientAge] = useState("");
   const [symptoms, setSymptoms] = useState("");
@@ -18,15 +16,12 @@ const BookingPage = () => {
   const selectedDoctorId = localStorage.getItem("selectedDoctorId");
   const doctorName = "Dr. Sarah Johnson"; // This would normally come from the selected doctor data
   
-  const availableTimeSlots = selectedDoctorId ? doctorTimeSlots[parseInt(selectedDoctorId) as keyof typeof doctorTimeSlots] || [] : [];
-
   const handleBooking = () => {
-    if (selectedDate && selectedTime && patientName && patientAge) {
+    if (selectedDate && patientName && patientAge) {
       const bookingData = {
         doctorId: selectedDoctorId,
         doctorName,
         date: selectedDate,
-        time: selectedTime,
         patientName,
         patientAge,
         symptoms
@@ -81,28 +76,6 @@ const BookingPage = () => {
                 />
               </div>
 
-              <div className="space-y-3">
-                <Label className="text-lg font-semibold">Choose Time</Label>
-                {availableTimeSlots.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-3">
-                    {availableTimeSlots.map((time) => (
-                      <Button
-                        key={time}
-                        variant={selectedTime === time ? "default" : "outline"}
-                        onClick={() => setSelectedTime(time)}
-                        className="h-12 text-base"
-                      >
-                        <Clock className="mr-2 w-4 h-4" />
-                        {time}
-                      </Button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground text-center p-4 border-2 border-dashed rounded-lg">
-                    No available time slots for this doctor
-                  </p>
-                )}
-              </div>
             </CardContent>
           </Card>
 
@@ -155,7 +128,7 @@ const BookingPage = () => {
         <div className="mt-10 text-center">
           <Button
             onClick={handleBooking}
-            disabled={!selectedDate || !selectedTime || !patientName || !patientAge}
+            disabled={!selectedDate || !patientName || !patientAge}
             size="kiosk"
             className="px-16"
           >

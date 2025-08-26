@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Calendar, Clock, User, CheckCircle } from "lucide-react";
+import { ArrowLeft, Calendar, User, CheckCircle } from "lucide-react";
 
 interface BookingData {
   doctorName: string;
   date: string;
-  time: string;
   patientName: string;
   patientAge: string;
   symptoms: string;
@@ -97,24 +96,14 @@ const ConfirmationPage = () => {
               <p className="text-lg text-muted-foreground">Cardiology Specialist</p>
             </div>
 
-            {/* Date & Time */}
+            {/* Date */}
             <div className="bg-accent/50 rounded-xl p-6">
               <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-3">
                 <Calendar className="text-primary" />
-                Date & Time
+                Appointment Date
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-lg font-semibold text-foreground">Date</p>
-                  <p className="text-xl text-primary">{formatDate(bookingData.date)}</p>
-                </div>
-                <div>
-                  <p className="text-lg font-semibold text-foreground">Time</p>
-                  <p className="text-xl text-primary flex items-center gap-2">
-                    <Clock className="w-5 h-5" />
-                    {bookingData.time}
-                  </p>
-                </div>
+              <div>
+                <p className="text-xl text-primary">{formatDate(bookingData.date)}</p>
               </div>
             </div>
 

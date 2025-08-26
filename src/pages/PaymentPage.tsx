@@ -8,7 +8,6 @@ interface ConfirmationData {
   bookingId: string;
   doctorName: string;
   date: string;
-  time: string;
   patientName: string;
   consultationFee: number;
   gst: number;
