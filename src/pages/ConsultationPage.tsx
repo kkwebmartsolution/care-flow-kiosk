@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Video, MessageCircle, Phone, Calendar, Clock, User } from "lucide-react";
+import { ArrowLeft, Video, MessageCircle, Phone, Calendar, User } from "lucide-react";
 
 interface ConsultationData {
   bookingId: string;
   doctorName: string;
   date: string;
-  time: string;
   patientName: string;
 }
 
@@ -103,13 +102,6 @@ const ConsultationPage = () => {
                     <div>
                       <p className="text-sm text-muted-foreground">Date</p>
                       <p className="text-lg font-semibold">{formatDate(consultationData.date)}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Clock className="w-6 h-6 text-primary" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Time</p>
-                      <p className="text-lg font-semibold">{consultationData.time}</p>
                     </div>
                   </div>
                 </div>
