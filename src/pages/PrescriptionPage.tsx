@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Download, Printer, QrCode, CheckCircle, Calendar, Video } from "lucide-react";
+import { ArrowLeft, Download, Printer, QrCode, CheckCircle, Calendar, Clock, Video } from "lucide-react";
 
 interface PrescriptionData {
   bookingId: string;
   prescriptionId: string;
   doctorName: string;
   date: string;
+  time: string;
   patientName: string;
   totalAmount: number;
   paymentMethod: string;
@@ -105,11 +106,21 @@ const PrescriptionPage = () => {
                 </div>
 
                 <div className="bg-accent/50 rounded-xl p-6">
-                  <h3 className="text-xl font-bold text-foreground mb-4">Appointment Date</h3>
-                  <div className="flex items-center gap-3">
-                    <Calendar className="text-primary w-5 h-5" />
-                    <div>
-                      <p className="text-lg font-semibold">{formatDate(prescriptionData.date)}</p>
+                  <h3 className="text-xl font-bold text-foreground mb-4">Appointment Schedule</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center gap-3">
+                      <Calendar className="text-primary w-5 h-5" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Date</p>
+                        <p className="text-lg font-semibold">{formatDate(prescriptionData.date)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Clock className="text-primary w-5 h-5" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Time</p>
+                        <p className="text-lg font-semibold">{prescriptionData.time}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
