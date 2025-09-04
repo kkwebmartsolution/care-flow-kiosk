@@ -1,24 +1,42 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { UserPlus, Users, Heart, Stethoscope } from "lucide-react";
+import { UserPlus, Users, Heart, Stethoscope, LogOut } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-primary text-primary-foreground py-6 shadow-lg">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-primary-foreground/10 rounded-full flex items-center justify-center">
-              <Heart className="w-8 h-8" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-primary-foreground/10 rounded-full flex items-center justify-center">
+                <Heart className="w-8 h-8" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold">CareFlow Kiosk</h1>
+                <p className="text-lg opacity-90">Your Health, Our Priority</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold">CareFlow Kiosk</h1>
-              <p className="text-lg opacity-90">Your Health, Our Priority</p>
-            </div>
+            {user && (
+              <div className="flex items-center gap-4">
+                <span className="text-sm opacity-75">Welcome, {user.user_metadata?.full_name || user.email}</span>
+                <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2 bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20">
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -47,39 +65,79 @@ const Index = () => {
 
         {/* Action Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          <Card className="border-2 hover:shadow-xl transition-all duration-200 cursor-pointer group" onClick={() => navigate("/login")}>
-            <CardContent className="p-12 text-center space-y-6">
-              <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
-                <UserPlus className="w-12 h-12 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-3xl font-bold text-foreground mb-3">New Customer</h3>
-                <p className="text-xl text-muted-foreground mb-6">
-                  First time visiting? Register and book your appointment
-                </p>
-                <Button size="kiosk" className="w-full">
-                  Get Started
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {!user ? (
+            <>
+              <Card className="border-2 hover:shadow-xl transition-all duration-200 cursor-pointer group" onClick={() => navigate("/auth")}>
+                <CardContent className="p-12 text-center space-y-6">
+                  <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                    <UserPlus className="w-12 h-12 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-bold text-foreground mb-3">New Customer</h3>
+                    <p className="text-xl text-muted-foreground mb-6">
+                      First time visiting? Register and book your appointment
+                    </p>
+                    <Button size="kiosk" className="w-full">
+                      Get Started
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card className="border-2 hover:shadow-xl transition-all duration-200 cursor-pointer group" onClick={() => navigate("/login")}>
-            <CardContent className="p-12 text-center space-y-6">
-              <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
-                <Users className="w-12 h-12 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-3xl font-bold text-foreground mb-3">Existing Customer</h3>
-                <p className="text-xl text-muted-foreground mb-6">
-                  Already have an account? Continue with your phone number
-                </p>
-                <Button size="kiosk" className="w-full">
-                  Continue
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              <Card className="border-2 hover:shadow-xl transition-all duration-200 cursor-pointer group" onClick={() => navigate("/auth")}>
+                <CardContent className="p-12 text-center space-y-6">
+                  <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                    <Users className="w-12 h-12 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-bold text-foreground mb-3">Existing Customer</h3>
+                    <p className="text-xl text-muted-foreground mb-6">
+                      Already have an account? Continue with your account
+                    </p>
+                    <Button size="kiosk" className="w-full">
+                      Continue
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <>
+              <Card className="border-2 hover:shadow-xl transition-all duration-200 cursor-pointer group" onClick={() => navigate("/doctors")}>
+                <CardContent className="p-12 text-center space-y-6">
+                  <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                    <Stethoscope className="w-12 h-12 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-bold text-foreground mb-3">Book Appointment</h3>
+                    <p className="text-xl text-muted-foreground mb-6">
+                      Browse available doctors and book your appointment
+                    </p>
+                    <Button size="kiosk" className="w-full">
+                      View Doctors
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 hover:shadow-xl transition-all duration-200 cursor-pointer group" onClick={() => navigate("/doctor-portal")}>
+                <CardContent className="p-12 text-center space-y-6">
+                  <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                    <Users className="w-12 h-12 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-bold text-foreground mb-3">Doctor Portal</h3>
+                    <p className="text-xl text-muted-foreground mb-6">
+                      Access your doctor dashboard and manage appointments
+                    </p>
+                    <Button size="kiosk" className="w-full">
+                      Doctor Login
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </div>
 
         {/* Features */}

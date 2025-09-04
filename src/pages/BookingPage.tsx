@@ -1,33 +1,126 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Calendar, User } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const BookingPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
   const [patientName, setPatientName] = useState("");
   const [patientAge, setPatientAge] = useState("");
   const [symptoms, setSymptoms] = useState("");
+  const [doctorData, setDoctorData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
-  const selectedDoctorId = localStorage.getItem("selectedDoctorId");
-  const doctorName = "Dr. Sarah Johnson"; // This would normally come from the selected doctor data
+  useEffect(() => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+
+    // Load selected doctor data
+    const savedDoctorData = localStorage.getItem("selectedDoctorData");
+    if (savedDoctorData) {
+      setDoctorData(JSON.parse(savedDoctorData));
+    } else {
+      toast({
+        title: "Error",
+        description: "No doctor selected",
+        variant: "destructive",
+      });
+      navigate("/doctors");
+    }
+
+    // Pre-fill patient name from user profile
+    if (user.user_metadata?.full_name) {
+      setPatientName(user.user_metadata.full_name);
+    }
+  }, [user]);
   
-  const handleBooking = () => {
-    if (selectedDate && patientName && patientAge) {
+  const handleBooking = async () => {
+    if (!selectedDate || !selectedTime || !patientName || !patientAge || !doctorData) {
+      toast({
+        title: "Error",
+        description: "Please fill all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Generate booking ID
+      const bookingId = `BK${Date.now()}`;
+
+      // Create appointment in database
+      const { data: appointmentData, error } = await supabase
+        .from('appointments')
+        .insert({
+          patient_id: user.id,
+          doctor_id: doctorData.id,
+          appointment_date: selectedDate,
+          appointment_time: selectedTime,
+          patient_name: patientName,
+          patient_age: parseInt(patientAge),
+          symptoms: symptoms || null,
+          consultation_fee: doctorData.consultation_fee,
+          booking_id: bookingId,
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating appointment:', error);
+        toast({
+          title: "Booking Failed",
+          description: "Failed to create appointment. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Store booking data for confirmation page
       const bookingData = {
-        doctorId: selectedDoctorId,
-        doctorName,
+        appointmentId: appointmentData.id,
+        bookingId,
+        doctorName: doctorData.profiles?.full_name || 'Dr. Anonymous',
+        doctorSpecialization: doctorData.specialization,
         date: selectedDate,
+        time: selectedTime,
         patientName,
         patientAge,
-        symptoms
+        symptoms,
+        consultationFee: doctorData.consultation_fee
       };
+
       localStorage.setItem("bookingData", JSON.stringify(bookingData));
+      
+      toast({
+        title: "Appointment Booked",
+        description: "Your appointment has been successfully booked!",
+      });
+      
       navigate("/confirmation");
+    } catch (error) {
+      console.error('Error booking appointment:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,6 +129,28 @@ const BookingPage = () => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     return tomorrow.toISOString().split('T')[0];
   };
+
+  const generateTimeSlots = () => {
+    const slots = [];
+    for (let hour = 9; hour <= 17; hour++) {
+      slots.push(`${hour.toString().padStart(2, '0')}:00`);
+      if (hour < 17) {
+        slots.push(`${hour.toString().padStart(2, '0')}:30`);
+      }
+    }
+    return slots;
+  };
+
+  if (!doctorData) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -52,7 +167,12 @@ const BookingPage = () => {
 
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-4">Book Appointment</h1>
-          <p className="text-xl text-muted-foreground">with {doctorName}</p>
+          <p className="text-xl text-muted-foreground">
+            with {doctorData.profiles?.full_name || 'Dr. Anonymous'} - {doctorData.specialization}
+          </p>
+          <p className="text-lg text-muted-foreground">
+            Consultation Fee: ${doctorData.consultation_fee}
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -76,6 +196,21 @@ const BookingPage = () => {
                 />
               </div>
 
+              <div className="space-y-3">
+                <Label className="text-lg font-semibold">Choose Time</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {generateTimeSlots().map((time) => (
+                    <Button
+                      key={time}
+                      variant={selectedTime === time ? "default" : "outline"}
+                      onClick={() => setSelectedTime(time)}
+                      className="h-12"
+                    >
+                      {time}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -128,11 +263,11 @@ const BookingPage = () => {
         <div className="mt-10 text-center">
           <Button
             onClick={handleBooking}
-            disabled={!selectedDate || !patientName || !patientAge}
+            disabled={!selectedDate || !selectedTime || !patientName || !patientAge || loading}
             size="kiosk"
             className="px-16"
           >
-            Continue to Confirmation
+            {loading ? "Booking..." : "Continue to Confirmation"}
           </Button>
         </div>
       </div>

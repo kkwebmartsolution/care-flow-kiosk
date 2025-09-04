@@ -1,223 +1,132 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Search, Calendar, User, Filter } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Search, Calendar, Filter } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-const allDoctors = [
-  {
-    id: 1,
-    name: "Dr. Sarah Johnson",
-    specialization: "Cardiology",
-    department: "Heart Care",
-    availability: "Available Today",
-    photo: "👩‍⚕️",
-    rating: 4.9
-  },
-  {
-    id: 2,
-    name: "Dr. Michael Chen",
-    specialization: "Orthopedics",
-    department: "Bone & Joint",
-    availability: "Available Today",
-    photo: "👨‍⚕️",
-    rating: 4.8
-  },
-  {
-    id: 3,
-    name: "Dr. Emily Davis",
-    specialization: "Pediatrics",
-    department: "Child Care",
-    availability: "Available Tomorrow",
-    photo: "👩‍⚕️",
-    rating: 4.9
-  },
-  {
-    id: 4,
-    name: "Dr. Robert Wilson",
-    specialization: "Dermatology",
-    department: "Skin Care",
-    availability: "Available Today",
-    photo: "👨‍⚕️",
-    rating: 4.7
-  },
-  {
-    id: 5,
-    name: "Dr. Lisa Anderson",
-    specialization: "Neurology",
-    department: "Brain & Nerve",
-    availability: "Available Today",
-    photo: "👩‍⚕️",
-    rating: 4.8
-  },
-  {
-    id: 6,
-    name: "Dr. James Brown",
-    specialization: "General Medicine",
-    department: "General Care",
-    availability: "Available Today",
-    photo: "👨‍⚕️",
-    rating: 4.6
-  }
-];
+interface Doctor {
+  id: string;
+  specialization: string;
+  department: string;
+  experience_years: number;
+  rating: number;
+  consultation_fee: number;
+  is_online: boolean;
+  bio: string;
+  profiles?: { full_name: string } | null;
+}
 
 const SearchPage = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [specializationFilter, setSpecializationFilter] = useState("");
   const [availabilityFilter, setAvailabilityFilter] = useState("");
-  const navigate = useNavigate();
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredDoctors = allDoctors.filter(doctor => {
-    const matchesSearch = doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor.department.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesSpecialization = !specializationFilter || doctor.specialization === specializationFilter;
-    const matchesAvailability = !availabilityFilter || doctor.availability === availabilityFilter;
-    
-    return matchesSearch && matchesSpecialization && matchesAvailability;
-  });
+  const specializations = ["Cardiology", "Dermatology", "Neurology", "Pediatrics", "Orthopedics", "General Medicine", "Psychiatry", "Gynecology"];
 
-  const specializations = [...new Set(allDoctors.map(doctor => doctor.specialization))];
-  const availabilityOptions = [...new Set(allDoctors.map(doctor => doctor.availability))];
+  useEffect(() => {
+    if (!user) { navigate("/auth"); return; }
+    fetchDoctors();
+  }, [user]);
 
-  const handleBookAppointment = (doctorId: number) => {
-    localStorage.setItem("selectedDoctorId", doctorId.toString());
-    navigate("/booking");
+  useEffect(() => {
+    let filtered = doctors;
+    if (searchTerm) {
+      filtered = filtered.filter(doctor => 
+        doctor.profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        doctor.specialization.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    if (specializationFilter) filtered = filtered.filter(doctor => doctor.specialization === specializationFilter);
+    if (availabilityFilter === "online") filtered = filtered.filter(doctor => doctor.is_online);
+    setFilteredDoctors(filtered);
+  }, [doctors, searchTerm, specializationFilter, availabilityFilter]);
+
+  const fetchDoctors = async () => {
+    try {
+      const { data, error } = await supabase.from('doctors').select(`*, profiles!doctors_user_id_fkey (full_name)`).order('rating', { ascending: false });
+      if (!error) setDoctors((data as any) || []);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleBookAppointment = (doctorId: string) => {
+    const selectedDoctorData = doctors.find(doc => doc.id === doctorId);
+    if (selectedDoctorData) {
+      localStorage.setItem("selectedDoctorId", doctorId);
+      localStorage.setItem("selectedDoctorData", JSON.stringify(selectedDoctorData));
+      navigate("/booking");
+    }
+  };
+
+  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
 
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <Button 
-            variant="ghost" 
-            size="lg"
-            onClick={() => navigate("/doctors")}
-          >
-            <ArrowLeft className="mr-2" />
-            Back to Doctors
-          </Button>
-          
-          <Button 
-            variant="destructive" 
-            size="lg"
-            onClick={() => {
-              localStorage.clear();
-              navigate("/");
-            }}
-          >
-            <User className="mr-2" />
-            Logout
-          </Button>
+        <Button variant="ghost" size="lg" onClick={() => navigate("/doctors")} className="mb-8">
+          <ArrowLeft className="mr-2" />Back to Doctors
+        </Button>
+
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-4">Search Doctors</h1>
+          <p className="text-xl text-muted-foreground">Find the right doctor for your needs</p>
         </div>
 
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Find Your Doctor</h1>
-          <p className="text-xl text-muted-foreground mb-8">Search by name, specialization, or department</p>
-          
-          <div className="max-w-4xl mx-auto space-y-6">
-            <div className="relative">
-              <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-muted-foreground w-6 h-6" />
-              <Input
-                type="text"
-                placeholder="Search for doctors, specializations, or departments..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="h-16 text-xl pl-16 pr-6 border-2 rounded-xl shadow-sm"
-              />
-            </div>
-            
-            <div className="flex items-center gap-4 justify-center">
-              <div className="flex items-center gap-2">
-                <Filter className="w-5 h-5 text-muted-foreground" />
-                <span className="text-lg font-semibold">Filters:</span>
+        <Card className="mb-8">
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input placeholder="Search doctors..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-12" />
               </div>
-              
               <Select value={specializationFilter} onValueChange={setSpecializationFilter}>
-                <SelectTrigger className="w-64 h-12">
-                  <SelectValue placeholder="All Specializations" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Specializations</SelectItem>
-                  {specializations.map((spec) => (
-                    <SelectItem key={spec} value={spec}>{spec}</SelectItem>
-                  ))}
-                </SelectContent>
+                <SelectTrigger className="h-12"><SelectValue placeholder="Specialization" /></SelectTrigger>
+                <SelectContent>{specializations.map((spec) => <SelectItem key={spec} value={spec}>{spec}</SelectItem>)}</SelectContent>
               </Select>
-              
               <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
-                <SelectTrigger className="w-48 h-12">
-                  <SelectValue placeholder="All Times" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Times</SelectItem>
-                  {availabilityOptions.map((availability) => (
-                    <SelectItem key={availability} value={availability}>{availability}</SelectItem>
-                  ))}
-                </SelectContent>
+                <SelectTrigger className="h-12"><SelectValue placeholder="Availability" /></SelectTrigger>
+                <SelectContent><SelectItem value="online">Online Now</SelectItem></SelectContent>
               </Select>
-              
-              {(specializationFilter || availabilityFilter) && (
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setSpecializationFilter("");
-                    setAvailabilityFilter("");
-                  }}
-                  className="h-12"
-                >
-                  Clear Filters
-                </Button>
-              )}
+              <Button variant="outline" onClick={() => {setSearchTerm(""); setSpecializationFilter(""); setAvailabilityFilter("");}} className="h-12"><Filter className="h-4 w-4 mr-2" />Clear</Button>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        {(searchTerm || specializationFilter || availabilityFilter) && (
-          <div className="mb-6">
-            <p className="text-lg text-muted-foreground">
-              {filteredDoctors.length > 0 
-                ? `Found ${filteredDoctors.length} doctor${filteredDoctors.length > 1 ? 's' : ''}`
-                : `No doctors found with the current filters`
-              }
-            </p>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredDoctors.map((doctor) => (
-            <Card key={doctor.id} className="hover:shadow-xl transition-all duration-200 border-2 border-border">
+            <Card key={doctor.id} className="hover:shadow-xl transition-all">
               <CardContent className="p-6">
-                <div className="text-center space-y-4">
-                  <div className="text-5xl">{doctor.photo}</div>
-                  
-                  <div>
-                    <h3 className="text-xl font-bold text-foreground">{doctor.name}</h3>
-                    <p className="text-lg text-primary font-semibold">{doctor.specialization}</p>
-                    <p className="text-base text-muted-foreground">{doctor.department}</p>
+                <div className="flex gap-4">
+                  <div className="text-5xl">👨‍⚕️</div>
+                  <div className="flex-1 space-y-3">
+                    <div>
+                      <h3 className="text-xl font-bold">{doctor.profiles?.full_name || 'Dr. Anonymous'}</h3>
+                      <p className="text-primary font-semibold">{doctor.specialization}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Badge variant={doctor.is_online ? "default" : "secondary"}>{doctor.is_online ? "Online" : "Offline"}</Badge>
+                      <Badge variant="outline">⭐ {doctor.rating}</Badge>
+                      <Badge variant="outline">${doctor.consultation_fee}</Badge>
+                    </div>
+                    <Button onClick={() => handleBookAppointment(doctor.id)} size="sm" className="w-full">
+                      <Calendar className="h-4 w-4 mr-2" />Book Appointment
+                    </Button>
                   </div>
-                  
-                  <div className="flex flex-wrap justify-center gap-2">
-                    <Badge variant={doctor.availability.includes("Today") ? "default" : "secondary"} className="text-sm">
-                      {doctor.availability}
-                    </Badge>
-                    <Badge variant="outline" className="text-sm">
-                      ⭐ {doctor.rating}
-                    </Badge>
-                  </div>
-                  
-                  <Button
-                    onClick={() => handleBookAppointment(doctor.id)}
-                    size="lg"
-                    className="w-full"
-                  >
-                    <Calendar className="mr-2" />
-                    Book Appointment
-                  </Button>
                 </div>
               </CardContent>
             </Card>
