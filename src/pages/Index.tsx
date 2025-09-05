@@ -120,18 +120,18 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-2 hover:shadow-xl transition-all duration-200 cursor-pointer group" onClick={() => navigate("/doctor-portal")}>
+              <Card className="border-2 hover:shadow-xl transition-all duration-200 cursor-pointer group" onClick={() => navigate("/search")}>
                 <CardContent className="p-12 text-center space-y-6">
                   <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
                     <Users className="w-12 h-12 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-3xl font-bold text-foreground mb-3">Doctor Portal</h3>
+                    <h3 className="text-3xl font-bold text-foreground mb-3">Search Doctors</h3>
                     <p className="text-xl text-muted-foreground mb-6">
-                      Access your doctor dashboard and manage appointments
+                      Search for doctors by specialization or name
                     </p>
                     <Button size="kiosk" className="w-full">
-                      Doctor Login
+                      Search Doctors
                     </Button>
                   </div>
                 </CardContent>
