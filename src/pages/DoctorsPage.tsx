@@ -45,9 +45,7 @@ const DoctorsPage = () => {
         .from('doctors')
         .select(`
           *,
-          profiles!doctors_user_id_fkey (
-            full_name
-          )
+          profiles(full_name)
         `)
         .eq('is_online', true)
         .order('rating', { ascending: false });

@@ -39,7 +39,7 @@ const DoctorPortal = () => {
 
   useEffect(() => {
     if (!user) {
-      navigate("/auth");
+      navigate("/doctor/login");
       return;
     }
     fetchDoctorData();
@@ -56,11 +56,11 @@ const DoctorPortal = () => {
 
       if (doctorError) {
         toast({
-          title: "Error",
+          title: "Access Denied",
           description: "You are not registered as a doctor",
           variant: "destructive",
         });
-        navigate("/auth");
+        navigate("/doctor/login");
         return;
       }
 
@@ -130,8 +130,8 @@ const DoctorPortal = () => {
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <p className="text-muted-foreground mb-4">Doctor profile not found</p>
-            <Button onClick={() => navigate("/auth")}>
-              Go to Authentication
+            <Button onClick={() => navigate("/doctor/login")}>
+              Go to Doctor Login
             </Button>
           </CardContent>
         </Card>
